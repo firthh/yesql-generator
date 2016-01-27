@@ -2,6 +2,10 @@
 
 Creates sql script for basic CRUD operations for a database. The SQL script is intended for use with YeSQL.
 
+## TODO
+ - Dispatch to different SQL queries to describe tables based on the database
+ - Support more than just MySQL
+
 ## Usage
 
 FIXME: Use this for user-level plugins:
