@@ -1,6 +1,6 @@
 # yesql-generator
 
-A Leiningen plugin to do many wonderful things.
+Creates sql script for basic CRUD operations for a database. The SQL script is intended for use with YeSQL.
 
 ## Usage
 
