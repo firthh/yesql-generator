@@ -1,10 +1,14 @@
 (ns leiningen.yesql-generator
   (:require [clojure.java.jdbc :as jdbc]))
 
-(defn get-tables [db]
-  (jdbc/query db ["SHOW TABLES"]))
+(defmulti get-tables :subprotocol)
+(defmethod get-tables "mysql" [db]
+  (->> (jdbc/query db ["SHOW TABLES"])
+       (map (fn [m] (first (vals m))))
+       (filter (fn [name] (not= name "schema_info")))))
 
-(defn describe-table [db name]
+(defmulti describe-table :subprotocol)
+(defmethod describe-table "mysql" [db name]
   (jdbc/query db [(str "describe " name)]))
 
 (defn generate-select-sql [table-name fields]
@@ -60,8 +64,6 @@
   (let [filename "queries.sql"
         db {}]
     (->> (get-tables db)
-         (map (fn [m] (first (vals m))))
-         (filter (fn [name] (not= name "schema_info")))
          (map (partial generate-table-queries db))
          (clojure.string/join "\r\n\r\n")
          (spit filename))))
