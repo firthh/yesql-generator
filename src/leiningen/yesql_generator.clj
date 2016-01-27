@@ -16,6 +16,16 @@
          " FROM " table-name
          " WHERE " (clojure.string/join" AND " (map (fn [v] (str v "=" (keyword v))) primary-keys)))))
 
+(defn generate-insert-sql [table-name fields]
+  (let [primary-keys (map :field (filter #(= (:key %) "PRI") fields))]
+    (str "-- name: insert-" table-name
+         "\r\n"
+         "INSERT INTO " table-name
+         "("
+         (clojure.string/join ", " (map :field fields))
+         ")"
+         " VALUES (" (clojure.string/join ", " (map (comp keyword :field) fields)) ")")))
+
 (defn generate-delete-sql [table-name fields]
   (let [primary-keys (map :field (filter #(= (:key %) "PRI") fields))]
     (str "-- name: delete-" table-name
@@ -39,7 +49,8 @@
   (let [fields (describe-table db table-name)]
     (clojure.string/join
      "\r\n\r\n"
-     [(generate-select-sql table-name fields)
+     [(generate-insert-sql table-name fields)
+      (generate-select-sql table-name fields)
       (generate-delete-sql table-name fields)
       (generate-update-sql table-name fields)])))
 
