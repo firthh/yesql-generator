@@ -9,7 +9,7 @@ Creates sql script for basic CRUD operations for a database. The SQL script is i
 
 ## Usage
 
-Put a `:database` key within you `project.clj` file.
+Put a `:database config` key within you `project.clj` file. Config can be any database spec that can be used with [JDBC](https://github.com/clojure/java.jdbc/blob/master/src/main/clojure/clojure/java/jdbc.clj#L176)
 
 Run:
 
