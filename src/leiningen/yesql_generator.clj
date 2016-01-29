@@ -1,14 +1,20 @@
 (ns leiningen.yesql-generator
   (:require [clojure.java.jdbc :as jdbc]))
 
-(defmulti get-tables :subprotocol)
-(defmethod get-tables "mysql" [db]
+(defn get-database-type [db & args]
+  (-> db
+      :connection
+      .getMetaData
+      .getDatabaseProductName))
+
+(defmulti get-tables get-database-type)
+(defmethod get-tables "MySQL" [db]
   (->> (jdbc/query db ["SHOW TABLES"])
        (map (fn [m] (first (vals m))))
        (filter (fn [name] (not= name "schema_info")))))
 
-(defmulti describe-table :subprotocol)
-(defmethod describe-table "mysql" [db name]
+(defmulti describe-table get-database-type)
+(defmethod describe-table "MySQL" [db name]
   (jdbc/query db [(str "describe " name)]))
 
 (defn generate-select-sql [table-name fields]
@@ -29,7 +35,8 @@ WHERE %s
     (format
      "-- name:insert-%s!
 INSERT INTO %s(%s)
-VALUES (%s)"
+VALUES (%s)
+"
      table-name
      table-name
      (clojure.string/join ", " (map :field fields))
@@ -40,7 +47,8 @@ VALUES (%s)"
     (format
      "-- name: delete-%s!
 DELETE FROM %s
-WHERE %s"
+WHERE %s
+"
      table-name
      table-name
      (clojure.string/join" AND " (map (fn [v] (str v "=" (keyword v))) primary-keys)))))
@@ -53,7 +61,8 @@ WHERE %s"
 UPDATE %s
 SET %s
 FROM %s
-WHERE %"
+WHERE %s
+"
      table-name
      table-name
      (clojure.string/join" AND " (map (fn [v] (str (:field v) "=" (keyword (:field v)))) not-primary-keys))
@@ -63,7 +72,7 @@ WHERE %"
 (defn generate-table-queries [db table-name]
   (let [fields (describe-table db table-name)]
     (clojure.string/join
-     "\r\n\r\n"
+     "\n"
      [(generate-insert-sql table-name fields)
       (generate-select-sql table-name fields)
       (generate-delete-sql table-name fields)
@@ -73,8 +82,9 @@ WHERE %"
   "I don't do a lot."
   [project & args]
   (let [filename "queries.sql"
-        db {}]
+        db {:connection (jdbc/get-connection {})}]
     (->> (get-tables db)
          (map (partial generate-table-queries db))
-         (clojure.string/join "\r\n\r\n")
-         (spit filename))))
+         (clojure.string/join "\n")
+         (spit filename))
+    (.close (:connection db))))
