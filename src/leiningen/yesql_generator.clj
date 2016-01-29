@@ -23,7 +23,7 @@
 (defn generate-insert-sql [table-name fields]
   (let [primary-keys (map :field (filter #(= (:key %) "PRI") fields))]
     (str "-- name: insert-" table-name
-         "\r\n"
+         "!\r\n"
          "INSERT INTO " table-name
          "("
          (clojure.string/join ", " (map :field fields))
@@ -33,7 +33,7 @@
 (defn generate-delete-sql [table-name fields]
   (let [primary-keys (map :field (filter #(= (:key %) "PRI") fields))]
     (str "-- name: delete-" table-name
-         "\r\n"
+         "!\r\n"
          "DELETE"
          " FROM " table-name
          " WHERE " (clojure.string/join" AND " (map (fn [v] (str v "=" (keyword v))) primary-keys)))))
@@ -42,7 +42,7 @@
   (let [primary-keys (filter #(= (:key %) "PRI") fields)
         not-primary-keys (filter #(not= (:key %) "PRI") fields)]
     (str "-- name: update-" table-name
-         "\r\n"
+         "!\r\n"
          "UPDATE " table-name
          " SET "
          (clojure.string/join" AND " (map (fn [v] (str (:field v) "=" (keyword (:field v)))) not-primary-keys))
