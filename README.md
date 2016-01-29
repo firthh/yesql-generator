@@ -20,16 +20,14 @@ OR
 `$lein yesql-generator filename.sql`
 
 ## Install
-Use this for user-level plugins:
+User-level plugins:
 
 Put `[yesql-generator "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your `:user`
 profile.
 
-Use this for project-level plugins:
+Project-level plugins:
 
 Put `[yesql-generator "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your project.clj.
-
-FIXME: and add an example usage that actually makes sense:
 
 
 ## License
