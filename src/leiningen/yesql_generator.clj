@@ -79,10 +79,10 @@ WHERE %s
       (generate-update-sql table-name fields)])))
 
 (defn yesql-generator
-  "I don't do a lot."
   [project & args]
-  (let [filename "queries.sql"
-        db {:connection (jdbc/get-connection {})}]
+  (println (:database project))
+  (let [filename (or (first args) "queries.sql")
+        db {:connection (jdbc/get-connection (:database project))}]
     (->> (get-tables db)
          (map (partial generate-table-queries db))
          (clojure.string/join "\n")
