@@ -13,41 +13,52 @@
 
 (defn generate-select-sql [table-name fields]
   (let [primary-keys (map :field (filter #(= (:key %) "PRI") fields))]
-    (str "-- name: select-" table-name
-         "\r\n"
-         "SELECT "
-         (clojure.string/join ", " (map :field fields))
-         " FROM " table-name
-         " WHERE " (clojure.string/join" AND " (map (fn [v] (str v "=" (keyword v))) primary-keys)))))
+    (format
+     "--name: select-%s
+SELECT %s
+FROM %s
+WHERE %s
+"
+     table-name
+     (clojure.string/join ", " (map :field fields))
+     table-name
+     (clojure.string/join" AND " (map (fn [v] (str v "=" (keyword v))) primary-keys)))))
 
 (defn generate-insert-sql [table-name fields]
   (let [primary-keys (map :field (filter #(= (:key %) "PRI") fields))]
-    (str "-- name: insert-" table-name
-         "!\r\n"
-         "INSERT INTO " table-name
-         "("
-         (clojure.string/join ", " (map :field fields))
-         ")"
-         " VALUES (" (clojure.string/join ", " (map (comp keyword :field) fields)) ")")))
+    (format
+     "-- name:insert-%s!
+INSERT INTO %s(%s)
+VALUES (%s)"
+     table-name
+     table-name
+     (clojure.string/join ", " (map :field fields))
+     (clojure.string/join ", " (map (comp keyword :field) fields)) ")")))
 
 (defn generate-delete-sql [table-name fields]
   (let [primary-keys (map :field (filter #(= (:key %) "PRI") fields))]
-    (str "-- name: delete-" table-name
-         "!\r\n"
-         "DELETE"
-         " FROM " table-name
-         " WHERE " (clojure.string/join" AND " (map (fn [v] (str v "=" (keyword v))) primary-keys)))))
+    (format
+     "-- name: delete-%s!
+DELETE FROM %s
+WHERE %s"
+     table-name
+     table-name
+     (clojure.string/join" AND " (map (fn [v] (str v "=" (keyword v))) primary-keys)))))
 
 (defn generate-update-sql [table-name fields]
   (let [primary-keys (filter #(= (:key %) "PRI") fields)
         not-primary-keys (filter #(not= (:key %) "PRI") fields)]
-    (str "-- name: update-" table-name
-         "!\r\n"
-         "UPDATE " table-name
-         " SET "
-         (clojure.string/join" AND " (map (fn [v] (str (:field v) "=" (keyword (:field v)))) not-primary-keys))
-         " FROM " table-name
-         " WHERE " (clojure.string/join" AND " (map (fn [v] (str (:field v) "=" (keyword (:field v)))) primary-keys)))))
+    (format
+     "-- name: update-%s!
+UPDATE %s
+SET %s
+FROM %s
+WHERE %"
+     table-name
+     table-name
+     (clojure.string/join" AND " (map (fn [v] (str (:field v) "=" (keyword (:field v)))) not-primary-keys))
+     table-name
+     (clojure.string/join" AND " (map (fn [v] (str (:field v) "=" (keyword (:field v)))) primary-keys)))))
 
 (defn generate-table-queries [db table-name]
   (let [fields (describe-table db table-name)]
